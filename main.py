@@ -317,8 +317,8 @@ class StockAnalysisPipeline:
             )
             
             # Step 7: 调用 AI 分析（传入增强的上下文和新闻）
-            result = self.analyzer.analyze(enhanced_context + "\n[每只股票总结限200字内,严禁2025年6月前旧闻,只讲核心逻辑+决断]",
-            news_context=news_context)
+            result = self.analyzer.analyze(enhanced_context, news_context=news_context)
+            
             
             return result
             
