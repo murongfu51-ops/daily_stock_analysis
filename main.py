@@ -317,8 +317,11 @@ class StockAnalysisPipeline:
             )
             
             # Step 7: 调用 AI 分析（传入增强的上下文和新闻）
-            my_rules = "今日2026年1月14日。分析{stock_name}。要求：1.严禁提2025年6月之前旧闻；2.严禁超150字；3.核心逻辑+动态+决断。"
-            result = self.analyzer.analyze(enhanced_context, news_context=news_context, prompt=my_rules)
+            from datetime import datetime
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            rules = f"\n[指令：今日是{current_date}。要求：1.严禁超200字；2.严禁提2025年6月以前旧闻；3.只讲核心逻辑+动态+决断。]"
+            result = self.analyzer.analyze(enhanced_context + rules, news_context=news_context)
+
 
             
             return result
