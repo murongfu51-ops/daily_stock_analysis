@@ -1,21 +1,18 @@
-name: Stock-Expert-Job
+name: Stock-Expert
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 21 * * *'
-
 jobs:
-  analyze:
+  run-task:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Init Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
-      - name: Install dependencies
+          python-version: '3.10'
+      - name: Deps
         run: pip install yfinance google-generativeai openai
-      - name: Run script
+      - name: Exec
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
