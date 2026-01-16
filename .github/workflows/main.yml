@@ -8,15 +8,18 @@ from openai import OpenAI
 STOCKS = ["2233.HK", "9926.HK", "2400.HK", "SMMT"]
 
 def ask_ai(p):
+    # 1. Gemini 3 (Flash Preview)
     try:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         return genai.GenerativeModel('gemini-3-flash-preview').generate_content(p).text
     except:
         pass
+    # 2. Gemini 2.5 (Flash)
     try:
         return genai.GenerativeModel('gemini-2.5-flash').generate_content(p).text
     except:
         pass
+    # 3. 千问保底
     try:
         c = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_BASE_URL"))
         return c.chat.completions.create(model=os.getenv("OPENAI_MODEL"), messages=[{"role":"user","content":p}]).choices[0].message.content
@@ -25,7 +28,7 @@ def ask_ai(p):
 
 def send_email(content):
     msg = MIMEText(content, 'plain', 'utf-8')
-    msg['Subject'] = "每日港美股投研内参"
+    msg['Subject'] = "📊 首席投研总监决策报告"
     msg['From'] = os.getenv("EMAIL_SENDER")
     msg['To'] = os.getenv("EMAIL_RECEIVERS")
     try:
@@ -36,25 +39,14 @@ def send_email(content):
         pass
 
 if __name__ == "__main__":
-    report = "【首席投研总监决策报告】\n"
+    report = ""
     for s in STOCKS:
         try:
             t = yf.Ticker(s)
-            price = t.fast_info['last_price']
-            news = [n['title'] for n in t.news[:3]]
-            
-            prompt = f"""
-            你作为【首席投研总监】，分析标的:{s}, 现价:{price:.2f}。
-            参考动态:{news}
-            要求:
-            1. 短中长期发展，给出短中长期预期回报率。
-            2. 穿透分析西部水泥非洲产能、康方/SMMT联动、心动新游及TapTap逻辑。
-            3. 给出明确决策导向。
-            """
-            
+            ctx = f"标的:{s},现价:{t.fast_info['last_price']:.2f},动态:{[n['title'] for n in t.news[:3]]}"
+            prompt = f"你作为【首席投研总监】，职责是穿透分析逻辑。分析:{ctx}。要求:150字内,禁旧闻。聚焦:西部水泥非洲产能、康方/SMMT联动、心动新游表现。"
             report += f"\n🎯 {s}\n{ask_ai(prompt)}\n" + "-"*30
         except:
             continue
-    
-    if len(report) > 30:
+    if report:
         send_email(report)
